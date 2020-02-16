@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Social Media Analytics</title>
+    <style>
+        table {
+            font-family: arial, sans-serif;
+            border-collapse: collapse;
+            width: 80%;
+
+        }
+
+        td, th {
+            border: 1px solid #dddddd;
+            text-align: left;
+            padding: 8px;
+        }
+
+        tr:nth-child(even) {
+            background-color: #dddddd;
+        }
+    </style>
+    <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+    <link rel="stylesheet" href="/resources/demos/style.css">
+    <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
+    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+    <script>
+        $(function () {
+            $("#tabs").tabs();
+        });
+    </script>
+</head>
+<body>
+<center><h1>Campaigns</h1></center>
+<div id="tabs">
+    <ul>
+        <li><a href="#tabs-1">Past Campaigns</a></li>
+        <li><a href="#tabs-2">New Campaign</a></li>
+
+    </ul>
+
+    <div id="tabs-1">
+        <h2>Past Campaigns</h2>
+        <table>
+            <tr>
+                <th>Name</th>
+                <th>Date</th>
+                <th>Posts</th>
+                <th>Social Media</th>
+            </tr>
+
+            {% for c in campaigns %}
+            <tr>
+                <td><a href="/analytics/{{c.id}}">{{ c.name }}</a></td>
+                <td>{{ c.time }}</td>
+                <td>{{ c.posts }}</td>
+                <td>{{ c.social_media }}</td>
+            </tr>
+            {% endfor %}
+        </table>
+    </div>
+    <div id="tabs-2">
+
+        <h2>New Campaign</h2>
+        <form action="/analytics/new">
+        <!--    Twitter username:<br>
+            <input type="text" name="twitter_username">
+            <br>
+            Facebook username:<br>
+            <input type="text" name="facebook_username">
+            <br>
+            Instagram username:<br>
+            <input type="text" name="instagram_username">
+            <br><br> -->
+            <input type="submit" value="Submit">
+        </form>
+    </div>
+</div>
+</body>
+</html>

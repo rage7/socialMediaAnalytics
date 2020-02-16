@@ -1,0 +1,665 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+     <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+
+    <meta charset="UTF-8">
+    <title>Social Media Analytics</title>
+    <style>
+        table {
+            font-family: arial, sans-serif;
+            border-collapse: collapse;
+            width: 100%;
+
+        }
+
+        td, th {
+            border: 1px solid #dddddd;
+            text-align: left;
+            padding: 8px;
+        }
+
+        tr:nth-child(even) {
+            background-color: #dddddd;
+        }
+        #tw_hashtag_hist {
+            width:30%;
+            float:left;
+        }
+
+        #fb_hashtag_hist {
+            width:30%;
+            position:absolute;
+            right:0;
+            left:0;
+            margin:auto;
+        }
+
+        #insta_hashtag_hist {
+            width:30%;
+            margin-left:65%;
+        }
+
+        #tw_mention_hist {
+            width:30%;
+            float:left;
+        }
+
+        #fb_mention_hist {
+            width:30%;
+            position:absolute;
+            right:0;
+            left:0;
+            margin:auto;
+        }
+        
+        #insta_mention_hist {
+            width:30%;
+            margin-left:65%;
+        }
+
+        #tw_url_pie {
+            width:30%;
+            float:left;
+        }
+
+        #fb_url_pie {
+            width:30%;
+            position:absolute;
+            right:0;
+            left:0;
+            margin:auto;
+        }
+
+        #insta_url_pie {
+            width:30%;
+            margin-left:65%;
+        }
+
+        #fb_hourly_hist {
+            width:30%;
+            position:absolute;
+            right:0;
+            left:0;
+            margin:auto;
+        }
+
+        #tw_hourly_hist {
+            width:30%;
+            float:left;
+        }
+
+        #insta_hourly_hist {
+            width:30%;
+            margin-left:65%;
+        }
+
+        #fb_daily_hist {
+            width:30%;
+            position:absolute;
+            right:0;
+            left:0;
+            margin:auto;
+        }
+
+        #tw_daily_hist {
+            width:30%;
+            float:left;
+        }
+        #insta_daily_hist {
+            width:30%;
+            margin-left:65%;
+        }
+
+    </style>
+      <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+  <link rel="stylesheet" href="/resources/demos/style.css">
+  <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
+  <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+  <script>
+  $( function() {
+    $( "#tabs" ).tabs();
+  } );
+  </script>
+
+</head>
+<body>
+<a href="/analytics">All Campaigns</a>
+
+<center><h1>Campaign details</h1></center>
+
+<div id="tabs">
+    <ul>
+        <li><a href="#tabs-1">Most Shared Posts</a></li>
+        <li><a href="#tabs-2">Most Recent Posts</a></li>
+        <li><a href="#tabs-3">Aggregate Data Visualizations</a></li>
+    </ul>
+
+    <div id="tabs-1">
+        <h2>Campaign's most shared posts</h2>
+        <table>
+            <tr>
+                <th>Post Text</th>
+                <th>Date</th>
+                <th>Shares</th>
+                <th>Social Medium</th>
+            </tr>
+
+            {% for p in posts %}
+            <tr>
+                <td>{{ p.text }}</a></td>
+                <td>{{ p.time }}</td>
+                <td>{{ p.shares }}</td>
+                <td>{{ p.medium }}</td>
+            </tr>
+            {% endfor %}
+        </table>
+    </div>
+    <div id="tabs-2">
+        <h2>Campaign's most recent posts</h2>
+        <table>
+            <tr>
+                <th>Post Text</th>
+                <th>Date</th>
+                <th>Shares</th>
+                <th>Social Medium</th>
+            </tr>
+
+            {% for p in recent_posts %}
+            <tr>
+                <td>{{ p.text }}</a></td>
+                <td>{{ p.time }}</td>
+                <td>{{ p.shares }}</td>
+                <td>{{ p.medium }}</td>
+            </tr>
+            {% endfor %}
+        </table>
+    </div>
+    <div id="tabs-3">
+        <h2> Most used hashtags</h2>
+        <div class="container">
+
+            <div id="tw_hashtag_hist"></div>
+            <div id="fb_hashtag_hist"></div>
+            <div id="insta_hashtag_hist"></div>
+
+        </div>
+
+
+        <h2> Most mentioned usernames</h2>
+
+        <div class="container">
+
+            <div id="tw_mention_hist"></div>
+            <div id="fb_mention_hist"></div>
+            <div id="insta_mention_hist"></div>
+        </div>
+
+
+        <h2> Links to websites</h2>
+
+        <div class="container">
+
+            <div id="tw_url_pie"></div>
+            <div id="fb_url_pie"></div>
+            <div id="insta_url_pie"></div>
+        </div>
+
+        <h2> Daily Posts Distribution for Campaign</h2>
+
+        <div class="container">
+
+            <div id="tw_daily_hist"></div>
+            <div id="fb_daily_hist"></div>
+            <div id="insta_daily_hist"></div>
+        </div>
+
+        <div class="container">
+
+            <div id="daily_hist"></div>
+        </div>
+
+        <h2> Intraday Posts Distribution</h2>
+
+        <div class="container">
+
+            <div id="tw_hourly_hist"></div>
+            <div id="fb_hourly_hist"></div>
+            <div id="insta_hourly_hist"></div>
+        </div>
+        <div class="container">
+
+            <div id="hourly_hist"></div>
+        </div>
+    </div>
+</div>
+ <script>
+        twitter_hashtags = [];
+        tw_hashtag_count = [];
+        {% for th in tw_hashtags %}
+            twitter_hashtags.push( "{{th.hashtag}}" );
+            tw_hashtag_count.push( {{th.count}} )
+        {% endfor %}
+
+        var data = [{
+            y:tw_hashtag_count,
+            x: twitter_hashtags,
+            type: 'bar',
+            name: 'hashtags',
+            title: 'Twitter Hashtags'
+        }]
+
+        var layout = {
+            title: 'Twitter Hashtags'
+        };
+
+        Plotly.newPlot("tw_hashtag_hist", data, layout);
+
+
+        facebook_hashtags = [];
+        fb_hashtag_count = [];
+        {% for fh in fb_hashtags %}
+            facebook_hashtags.push( "{{fh.hashtag}}" );
+            fb_hashtag_count.push( {{fh.count}} )
+        {% endfor %}
+
+        var data = [{
+            y:fb_hashtag_count,
+            x: facebook_hashtags,
+            type: 'bar',
+            name: 'hashtags'
+        }]
+
+        var layout = {
+            title: 'Facebook Hashtags'
+
+        };
+
+        Plotly.newPlot("fb_hashtag_hist", data,layout)
+
+        instagram_hashtags = [];
+        insta_hashtag_count = [];
+        {% for is in insta_hashtags %}
+            instagram_hashtags.push( "{{is.hashtag}}" );
+            insta_hashtag_count.push( {{is.count}} )
+        {% endfor %}
+
+        var data = [{
+            y:insta_hashtag_count,
+            x: instagram_hashtags,
+            type: 'bar',
+            name: 'hashtags'
+        }]
+
+        var layout = {
+            title: 'Instagram Hashtags'
+
+        };
+
+        Plotly.newPlot("insta_hashtag_hist", data,layout)
+
+
+        twitter_mentions = [];
+        tw_mention_count = [];
+        {% for tm in tw_mentions %}
+            twitter_mentions.push( "{{tm.username}}" );
+            tw_mention_count.push( {{tm.count}} )
+        {% endfor %}
+
+        var data = [{
+            y:tw_mention_count,
+            x: twitter_mentions,
+            type: 'bar',
+            name: 'mentions'
+
+        }]
+
+        var layout = {
+            title: 'Twitter Mentioned Users'
+
+        };
+
+        Plotly.newPlot("tw_mention_hist", data, layout);
+
+
+        facebook_mentions = [];
+        fb_mention_count = [];
+        {% for fm in fb_mentions %}
+            facebook_mentions.push( "{{fm.username}}" );
+            fb_mention_count.push( {{fm.count}} )
+        {% endfor %}
+
+        var data = [{
+            y:fb_mention_count,
+            x: facebook_mentions,
+            type: 'bar',
+            name: 'mentions'
+        }]
+
+        var layout = {
+            title: 'Facebook Mentioned Users'
+        };
+
+        Plotly.newPlot("fb_mention_hist", data,layout)
+
+        instagram_mentions = [];
+        insta_mention_count = [];
+        {% for im in insta_mentions %}
+            instagram_mentions.push( "{{im.username}}" );
+            insta_mention_count.push( {{im.count}} )
+        {% endfor %}
+
+        var data = [{
+            y:insta_mention_count,
+            x: instagram_mentions,
+            type: 'bar',
+            name: 'mentions'
+        }]
+
+        var layout = {
+            title: 'Instagram Mentioned Users'
+        };
+
+        Plotly.newPlot("insta_mention_hist", data,layout)
+
+
+
+        twitter_urls = [];
+        tw_urls_count = [];
+        {% for u in tw_urls %}
+            twitter_urls.push( "{{u.site}}" );
+            tw_urls_count.push( {{u.count}} )
+        {% endfor %}
+
+        var data = [{
+            values: tw_urls_count,
+            labels: twitter_urls,
+            type: 'pie',
+            name: 'urls'
+        }]
+
+        var layout = {
+            title: 'Twitter most cited web sites'
+
+        };
+
+        Plotly.newPlot("tw_url_pie", data,layout)
+
+
+        facebook_urls = [];
+        fb_urls_count = [];
+        {% for u in fb_urls %}
+            facebook_urls.push( "{{u.site}}" );
+            fb_urls_count.push( {{u.count}} )
+        {% endfor %}
+
+        var data = [{
+            values: fb_urls_count,
+            labels: facebook_urls,
+            type: 'pie',
+            name: 'urls'
+        }]
+
+        var layout = {
+            title: 'Facebook most cited web sites'
+
+        };
+
+        Plotly.newPlot("fb_url_pie", data,layout)
+
+        instagram_urls = [];
+        insta_urls_count = [];
+        {% for u in insta_urls %}
+            instagram_urls.push( "{{u.site}}" );
+            insta_urls_count.push( {{u.count}} )
+        {% endfor %}
+
+        var data = [{
+            values: insta_urls_count,
+            labels: instagram_urls,
+            type: 'pie',
+            name: 'urls'
+        }]
+
+        var layout = {
+            title: 'Instagram most cited web sites'
+
+        };
+
+        Plotly.newPlot("insta_url_pie", data,layout)
+
+
+        twitter_daily_posts = [];
+        tw_daily_count = [];
+        tw_total_count = 0
+        {% for d in tw_daily %}
+            twitter_daily_posts.push( "{{d.day}}" );
+            tw_daily_count.push( {{d.count}} )
+            tw_total_count += {{d.count}}
+        {% endfor %}
+
+        var data = [{
+            y:tw_daily_count,
+            x: twitter_daily_posts,
+            type: 'bar',
+            name: 'daily posts'
+
+        }]
+
+        var layout = {
+            title: 'Twitter Daily Post Distribution'
+
+        };
+
+        Plotly.newPlot("tw_daily_hist", data, layout);
+
+
+        facebook_daily_posts = [];
+        fb_daily_count = [];
+        fb_total_count = 0
+        {% for d in fb_daily %}
+            facebook_daily_posts.push( "{{d.day}}" );
+            fb_daily_count.push( {{d.count}} );
+            fb_total_count += {{ d.count }};
+        {% endfor %}
+
+        var data = [{
+            y:fb_daily_count,
+            x: facebook_daily_posts,
+            type: 'bar',
+            name: 'daily posts'
+        }]
+
+        var layout = {
+            title: 'Facebook Daily Post Distribution'
+
+        };
+
+        Plotly.newPlot("fb_daily_hist", data,layout)
+
+
+        instagram_daily_posts = [];
+        insta_daily_count = [];
+        insta_total_count = 0
+        {% for d in insta_daily %}
+            instagram_daily_posts.push( "{{d.day}}" );
+            insta_daily_count.push( {{d.count}} );
+            insta_total_count += {{ d.count }};
+        {% endfor %}
+
+        var data = [{
+            y:insta_daily_count,
+            x: instagram_daily_posts,
+            type: 'bar',
+            name: 'daily posts'
+        }]
+
+        var layout = {
+            title: 'Instagram Daily Post Distribution'
+
+        };
+
+        Plotly.newPlot("insta_daily_hist", data,layout)
+
+
+        fb_daily_percentage = []
+         for (var count in fb_daily_count) {
+             fb_daily_percentage.push(fb_daily_count[count]/fb_total_count)
+         }
+         tw_daily_percentage = []
+         for (var cnt in tw_daily_count) {
+             tw_daily_percentage.push(tw_daily_count[cnt]/tw_total_count)
+         }
+         insta_daily_percentage = []
+         for (var incnt in insta_daily_count) {
+             insta_daily_percentage.push(insta_daily_count[incnt]/insta_total_count)
+         }
+
+         var data1 = {
+             x:twitter_daily_posts,
+             y: tw_daily_percentage,
+             type: 'bar',
+             name: 'twitter daily posts normalized'
+         };
+
+         var data2 = {
+             x:facebook_daily_posts,
+             y: fb_daily_percentage,
+             type: 'bar',
+              name: 'facebook daily posts normalized'
+         }
+
+         var data3 = {
+             x:instagram_daily_posts,
+             y: insta_daily_percentage,
+             type: 'bar',
+              name: 'instagram daily posts normalized'
+         }
+
+
+         var data = [data1, data2, data3];
+         var layout = {title: ' Normalized Daily Post Distribution for Facebook, Twitter and Instagram',
+             barmode: 'group'};
+
+         Plotly.newPlot("daily_hist", data,layout)
+
+
+        twitter_hourly_posts = [];
+        tw_hourly_count = [];
+        tw_total_count = 0
+        {% for h in tw_hourly %}
+            twitter_hourly_posts.push( "{{h.hour}}" );
+            tw_hourly_count.push( {{h.count}} )
+            tw_total_count += {{h.count}}
+        {% endfor %}
+
+        var data = [{
+            y:tw_hourly_count,
+            x: twitter_hourly_posts,
+            type: 'bar',
+            name: 'hourly posts'
+
+        }]
+
+        var layout = {
+            title: 'Twitter Intraday Post Distribution'
+
+        };
+
+        Plotly.newPlot("tw_hourly_hist", data, layout);
+
+
+        facebook_hourly_posts = [];
+        fb_hourly_count = [];
+        fb_total_count = 0
+        {% for h in fb_hourly %}
+            facebook_hourly_posts.push( "{{h.hour}}" );
+            fb_hourly_count.push( {{h.count}} )
+            fb_total_count+= {{h.count}}
+        {% endfor %}
+
+        var data = [{
+            y:fb_hourly_count,
+            x: facebook_hourly_posts,
+            type: 'bar',
+            name: 'hourly posts'
+        }]
+
+        var layout = {
+            title: 'Facebook Intraday Post Distribution'
+
+        };
+
+        Plotly.newPlot("fb_hourly_hist", data,layout)
+
+        instagram_hourly_posts = [];
+        insta_hourly_count = [];
+        insta_total_count = 0
+        {% for h in insta_hourly %}
+            instagram_hourly_posts.push( "{{h.hour}}" );
+            insta_hourly_count.push( {{h.count}} )
+            insta_total_count+= {{h.count}}
+        {% endfor %}
+
+        var data = [{
+            y:insta_hourly_count,
+            x: instagram_hourly_posts,
+            type: 'bar',
+            name: 'hourly posts'
+        }]
+
+        var layout = {
+            title: 'Instagram Intraday Post Distribution'
+
+        };
+
+        Plotly.newPlot("insta_hourly_hist", data,layout)
+
+
+        fb_hourly_percentage = []
+         for (var count in fb_hourly_count) {
+             fb_hourly_percentage.push(fb_hourly_count[count]/fb_total_count)
+         }
+         tw_hourly_percentage = []
+         for (var cnt in tw_hourly_count) {
+             tw_hourly_percentage.push(tw_hourly_count[cnt]/tw_total_count)
+         }
+         insta_hourly_percentage = []
+         for (var incnt in insta_hourly_count) {
+             insta_hourly_percentage.push(insta_hourly_count[incnt]/insta_total_count)
+         }
+
+         var data1 = {
+             x:twitter_hourly_posts,
+             y: tw_hourly_percentage,
+             type: 'bar',
+             name: 'twitter hourly posts normalized'
+         };
+
+         var data2 = {
+             x:facebook_hourly_posts,
+             y: fb_hourly_percentage,
+             type: 'bar',
+              name: 'facebook hourly posts normalized'
+         }
+         var data3 = {
+             x:instagram_hourly_posts,
+             y: insta_hourly_percentage,
+             type: 'bar',
+              name: 'instagram hourly posts normalized'
+         }
+
+
+         var data = [data1, data2, data3];
+         var layout = {title: ' Normalized Intraday Post Distribution for Facebook, Twitter and Instagram',
+             barmode: 'group'};
+
+         Plotly.newPlot("hourly_hist", data,layout)
+
+
+
+
+    </script>
+
+</body>
+</html>
